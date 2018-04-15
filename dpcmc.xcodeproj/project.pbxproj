@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F544AE4C208376A30092506F /* fft4g.c in Sources */ = {isa = PBXBuildFile; fileRef = F544AE4B208376A30092506F /* fft4g.c */; };
 		F563B17C2073B835001209C0 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F563B17A2073B835001209C0 /* main.cpp */; };
 		F5BA523620751E1A00BBCE9A /* FileRead.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5BA523020751E1A00BBCE9A /* FileRead.cpp */; };
 		F5BA523720751E1A00BBCE9A /* FileWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5BA523220751E1A00BBCE9A /* FileWrite.cpp */; };
@@ -26,6 +27,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F544AE4B208376A30092506F /* fft4g.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = fft4g.c; sourceTree = SOURCE_ROOT; };
 		F563B17A2073B835001209C0 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = SOURCE_ROOT; };
 		F5A7CC312073B588001DFEDD /* dpcmc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = dpcmc; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5BA523020751E1A00BBCE9A /* FileRead.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileRead.cpp; sourceTree = "<group>"; };
@@ -67,6 +69,7 @@
 			isa = PBXGroup;
 			children = (
 				F563B17A2073B835001209C0 /* main.cpp */,
+				F544AE4B208376A30092506F /* fft4g.c */,
 				F5BA522F20751E1A00BBCE9A /* stk */,
 			);
 			name = dpcmc;
@@ -146,6 +149,7 @@
 				F5BA523720751E1A00BBCE9A /* FileWrite.cpp in Sources */,
 				F563B17C2073B835001209C0 /* main.cpp in Sources */,
 				F5BA523820751E1A00BBCE9A /* Stk.cpp in Sources */,
+				F544AE4C208376A30092506F /* fft4g.c in Sources */,
 				F5BA523620751E1A00BBCE9A /* FileRead.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

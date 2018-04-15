@@ -9,6 +9,7 @@
 #include "FileRead.h"
 #include "FileWrite.h"
 #include "Stk.h"
+#include <cassert>
 #include <algorithm>
 #include <list>
 #include <random>
@@ -17,6 +18,10 @@
 #include <fstream>
 #include <iostream>
 #include <cstdint>
+
+extern "C" {
+	void rdft(int, int, double *, int *, double *);
+}
 
 
 class NoiseShape {
@@ -55,6 +60,96 @@ private:
 	int			mTaps;
 	double		*mErr;
 	int			mErrPtr;
+};
+
+class Convolution {
+public:
+	Convolution(int filterLength, const double *filter)
+	{
+		m_filter_len = filterLength;
+		m_fft_len = filterLength * 2;
+		m_fft_n = 1;
+		while ((2 << m_fft_n) < m_fft_len) {
+			m_fft_n++;
+		}
+		m_ip_len = 2 + (2 << ((m_fft_n - 1)/2));
+		m_w_len = 2 << (m_fft_n - 1);
+		m_ip = new int[m_ip_len];
+		m_work = new double[m_w_len];
+		m_filter = new double[m_fft_len];
+		m_fft_buff = new double[m_fft_len];
+		m_filter_result = new double[m_fft_len];
+		
+		m_ip[0] = 0;
+		
+		for (int i=0; i<m_fft_len; ++i) {
+			m_filter_result[i] = .0;
+		}
+		
+		for (int i=0; i<m_filter_len; ++i) {
+			m_filter[i] = filter[i] * (1.0 / m_filter_len);
+		}
+		for (int i=m_filter_len; i<m_fft_len; ++i) {
+			m_filter[i] = .0;
+		}
+		rdft(m_fft_len, 1, m_filter, m_ip, m_work);
+	}
+	~Convolution()
+	{
+		delete [] m_ip;
+		delete [] m_work;
+		delete [] m_filter;
+		delete [] m_fft_buff;
+		delete [] m_filter_result;
+	}
+	
+	void convolve(double *in, int length)
+	{
+		assert(length <= m_filter_len);
+		
+		for (int i=0; i<length; ++i) {
+			m_fft_buff[i] = in[i];
+		}
+		for (int i=length; i<m_fft_len; ++i) {
+			m_fft_buff[i] = .0;
+		}
+		rdft(m_fft_len, 1, m_fft_buff, m_ip, m_work);
+		m_fft_buff[0] *= m_filter[0];
+		m_fft_buff[1] *= m_filter[1];
+		for (int i=1; i<m_filter_len; ++i) {
+			double realp = m_fft_buff[2*i] * m_filter[2*i] - m_fft_buff[2*i+1] * m_filter[2*i+1];
+			double imagp = m_fft_buff[2*i] * m_filter[2*i+1] + m_fft_buff[2*i+1] * m_filter[2*i];
+			m_fft_buff[2*i] = realp;
+			m_fft_buff[2*i+1] = imagp;
+		}
+		rdft(m_fft_len, -1, m_fft_buff, m_ip, m_work);
+		for (int i=0; i<m_fft_len; ++i) {
+			m_filter_result[i] += m_fft_buff[i];
+		}
+		for (int i=0; i<length; ++i) {
+			in[i] = m_filter_result[i];
+		}
+		for (int i=0; i<m_filter_len; ++i) {
+			m_filter_result[i] = m_filter_result[i+m_filter_len];
+			m_filter_result[i+m_filter_len] = .0;
+		}
+	}
+	
+private:
+	Convolution();
+	
+	int m_filter_len;
+	int m_fft_n;
+	int m_fft_len;
+	double *m_filter;
+	double *m_fft_buff;
+	double *m_filter_result;
+	
+	int m_ip_len;
+	int m_w_len;
+	int *m_ip;
+	double *m_work;
+	
 };
 
 #if _WIN32
@@ -165,7 +260,7 @@ NoiseShapeFilter	s_ns_filter[] = {
 const int num_ns_filters = sizeof(s_ns_filter) / sizeof(NoiseShapeFilter);
 
 const int	resample_window_len = 256;
-const int	filter_window_len = 8192;
+const int	filter_window_len = 16384;
 
 const double system_clock_rate_ntsc = 1789772.5;
 const int sample_rate_cycles[16] = {
@@ -272,8 +367,9 @@ int firLowpassFilter(const stk::StkFrames &src,
 {
 	int		half_window_len = filter_window_len / 2;
 	double	coeff[filter_window_len];
+	double	input[filter_window_len];
 	
-	// フィルタのテーブル作成
+	// フィルタ作成
 	for (int i=0; i<filter_window_len; ++i) {
 		double	x = i - half_window_len;
 		double	window_x = x/half_window_len + 1.0;
@@ -281,22 +377,42 @@ int firLowpassFilter(const stk::StkFrames &src,
 		coeff[i] = sinc(x * stopband) * window * stopband;
 	}
 	
-	for (size_t i=0; i<src.size(); i++) {
-		double	dstSum = .0;
-		for (int j=-half_window_len; j<half_window_len; j++) {
-			int	src_index = (int)(i + j);
-			double	src_value = initial_value;
-			if (src_index >= (int)src.size()) {
-				src_value = center_value;
-			}
-			else if (src_index >= 0) {
-				src_value = src[src_index];
-			}
-			dstSum += src_value * coeff[j + half_window_len];
-		}
-		dst[i] = dstSum;
+	Convolution conv(filter_window_len, coeff);
+
+	// initial_valueの反映
+	for (int i=0; i<filter_window_len; ++i) {
+		input[i] = initial_value;
 	}
+	conv.convolve(input, filter_window_len);
 	
+	int src_index = 0;
+	int dst_index = -half_window_len;
+	
+	while (dst_index < static_cast<int>(src.size())) {
+		int input_len = static_cast<int>(src.size()) - src_index;
+		if (input_len > filter_window_len) {
+			input_len = filter_window_len;
+		}
+		if (input_len < 0) {
+			input_len = 0;
+		}
+		for (int i=0; i<input_len; ++i) {
+			input[i] = src[src_index + i];
+		}
+		for (int i=input_len; i<filter_window_len; ++i) {
+			input[i] = 0;
+		}
+		conv.convolve(input, filter_window_len);
+		src_index += input_len;
+		
+		for (int i=0; i<filter_window_len; ++i) {
+			if ((dst_index >= 0) && (dst_index < src.size())) {
+				dst[dst_index] = input[i];
+			}
+			dst_index++;
+		}
+	}
+
 	return (int)src.size();
 }
 
