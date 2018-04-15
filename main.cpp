@@ -168,7 +168,7 @@ int resample(const stk::StkFrames &src,
 int firLowpassFilter(const stk::StkFrames &src,
 					 stk::StkFrames &dst,
 					 double stopband,
-					 double initial_value, double center_value);
+					 double initial_value);
 int preprocessInputBuffer(const std::string &in_file_path,
 						  stk::StkFrames &preprocess_buff, double dst_rate,
 						  double shifter_weight, bool in_verbose_mode, int centerBiasLevel,
@@ -362,8 +362,7 @@ int resample(const stk::StkFrames &src,
 int firLowpassFilter(const stk::StkFrames &src,
 					 stk::StkFrames &dst,
 					 double stopband,
-					 double initial_value,
-					 double center_value)
+					 double initial_value)
 {
 	int		half_window_len = filter_window_len / 2;
 	double	coeff[filter_window_len];
@@ -673,7 +672,7 @@ int preprocessInputBuffer(const std::string &in_file_path,
 	firLowpassFilter(rectify_buff,
 					 filtered_shifter_buff,
 					 20.0 / (dst_rate/2),
-					 start_sample, 0);
+					 start_sample);
 	// ゲイン調整
 	for (int i=0; i<src_frames; ++i) {
 		filtered_shifter_buff[i] *= 2.0;
