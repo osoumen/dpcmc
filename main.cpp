@@ -348,12 +348,6 @@ int resample(const stk::StkFrames &src,
 				dstSum += value * cutoffRate;
 			}
 		}
-		if (dstSum > 1.0) {
-			dstSum = 1.0;
-		}
-		if (dstSum < -1.0) {
-			dstSum = -1.0;
-		}
 		dst[i] = dstSum;
 	}
 	return dstSize;
