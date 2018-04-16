@@ -754,10 +754,10 @@ int processInputFile(const std::string &in_file_path)
 	}
 	uint32_t		in_frames = static_cast<uint32_t>(in_file.fileSize());
 	stk::StkFloat	in_samplerate = in_file.fileRate();
-	stk::StkFrames	floatbuff(in_frames, 1);
-	in_file.read(floatbuff, 0, false);
+	stk::StkFrames	filebuff(in_frames, in_file.channels());
+	in_file.read(filebuff, 0, false);
 	
-	// float型フォーマットにレンジを変換する
+	// モノラル、float型フォーマットに変換する
 	double normalize_gain = 1.0;
 	if (in_file.format() == stk::FileRead::STK_SINT8) {
 		normalize_gain = 128.0;
@@ -771,8 +771,17 @@ int processInputFile(const std::string &in_file_path)
 	if (in_file.format() == stk::FileRead::STK_SINT32) {
 		normalize_gain = 2147483648.0;
 	}
+	normalize_gain *= in_file.channels();
+
+	stk::StkFrames	floatbuff(in_frames, 1);
 	for (uint32_t i=0; i<in_frames; ++i) {
-		floatbuff[i] = (floatbuff[i] / normalize_gain) * wave_gain;
+		floatbuff[i] = 0;
+		for (int ch=0; ch<in_file.channels(); ++ch) {
+			floatbuff[i] += (filebuff[i*in_file.channels() + ch] / normalize_gain) * wave_gain;
+		}
+	}
+	if (in_file.channels() > 1) {
+		std::cout << "convert " << in_file.channels() << " channels to mono." << std::endl;
 	}
 	
 	// 目的のDPCMのサンプリングレートに変換
