@@ -605,11 +605,10 @@ int preprocessInputBuffer(const std::string &in_file_path,
 		}
 	}
 	
-	// 先頭window_lenサンプルの平均値をとって初期値とする
+	// 先頭2048サンプルの平均値をとって初期値とする
 	double start_sample = .0;
 	{
-		int window_len = (src_frames > (filter_window_len/2))?
-		(filter_window_len/2) : src_frames;
+		int window_len = (src_frames > 2048)?2048 : src_frames;
 		for (int i=0; i<window_len; ++i) {
 			start_sample += rectify_buff[i] / static_cast<double>(window_len);
 		}
