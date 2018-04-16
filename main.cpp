@@ -801,7 +801,7 @@ int processInputFile(const std::string &in_file_path)
 	else {
 		std::cout << "resample " << in_samplerate << "Hz to " << dst_rate << "Hz" << std::endl;
 		src_frames = resample(floatbuff, in_samplerate, preprocess_buff,
-							  src_frames, dst_rate, 0.999, resample_window_len);
+							  src_frames, dst_rate, 0.995, resample_window_len);
 		preprocess_buff.resize(src_frames);
 	}
 	
