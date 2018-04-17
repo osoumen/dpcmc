@@ -399,7 +399,7 @@ int firLowpassFilter(const stk::StkFrames &src,
 		src_index += input_len;
 		
 		for (int i=0; i<filter_window_len; ++i) {
-			if ((dst_index >= 0) && (dst_index < src.size())) {
+			if ((dst_index >= 0) && (dst_index < static_cast<int>(src.size()))) {
 				dst[dst_index] = input[i];
 			}
 			dst_index++;
@@ -775,7 +775,7 @@ int processInputFile(const std::string &in_file_path)
 	stk::StkFrames	floatbuff(in_frames, 1);
 	for (uint32_t i=0; i<in_frames; ++i) {
 		floatbuff[i] = 0;
-		for (int ch=0; ch<in_file.channels(); ++ch) {
+		for (unsigned int ch=0; ch<in_file.channels(); ++ch) {
 			floatbuff[i] += (filebuff[i*in_file.channels() + ch] / normalize_gain) * wave_gain;
 		}
 	}
@@ -792,7 +792,7 @@ int processInputFile(const std::string &in_file_path)
 		std::cout << "no resampling." << std::endl;
 		src_frames = in_frames;
 		preprocess_buff.resize(src_frames);
-		for (int i=0; i<in_frames; ++i) {
+		for (uint32_t i=0; i<in_frames; ++i) {
 			preprocess_buff[i] = floatbuff[i];
 		}
 		src_frames = in_frames;

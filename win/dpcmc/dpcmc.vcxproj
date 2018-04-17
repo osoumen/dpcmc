@@ -146,6 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\fft4g.c" />
     <ClCompile Include="..\..\main.cpp" />
     <ClCompile Include="..\..\stk\FileRead.cpp">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;__LITTLE_ENDIAN__;_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
