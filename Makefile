@@ -13,6 +13,7 @@ IFILES = stk/FileRead.h \
 		 stk/Stk.h \
 				 
 CFILES = main.cpp \
+		 fft4g.c \
 		 stk/FileRead.cpp \
 		 stk/FileWrite.cpp \
 		 stk/Stk.cpp \
