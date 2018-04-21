@@ -220,7 +220,7 @@ bool use_linearity_correction = true;
 bool help_mode = false;
 int dither_mode = 3;
 int noise_shape_mode = 3;
-int center_bias_level = 0;
+int center_bias_level = 64;
 bool no_resampling = false;
 
 bool output_envelope = false;
@@ -870,14 +870,14 @@ int main(int argc, char * argv[])
 					
 				case 'i':
 					force_initial_volume = std::stoi(&argv[i][2]);
-					if (force_initial_volume > 127) force_initial_volume = 127;
-					if (force_initial_volume < 0) force_initial_volume = 0;
+					if (force_initial_volume > 127) help_mode = true;
+					if (force_initial_volume < 0) help_mode = true;
 					break;
 					
 				case 'c':
 					center_bias_level = std::stoi(&argv[i][2]);
-					if (center_bias_level > 127) center_bias_level = 127;
-					if (center_bias_level < 0) center_bias_level = 0;
+					if (center_bias_level > 127) help_mode = true;
+					if (center_bias_level < 0) help_mode = true;
 					break;
 
 				case 'w':
@@ -887,7 +887,7 @@ int main(int argc, char * argv[])
 				case 'r':
 					sample_rate_ind = std::stoi(&argv[i][2]);
 					if (sample_rate_ind > 15 || sample_rate_ind < 0) {
-						sample_rate_ind = 15;	// default
+						help_mode = true;
 					}
 					break;
 					
@@ -951,7 +951,7 @@ int main(int argc, char * argv[])
 		std::cout << "Options:" << std::endl;
 		std::cout << "  -g[gain]   Input volume(default:gain=1.0)" << std::endl;
 		std::cout << "  -i[0..127] Initial volume(default:auto)" << std::endl;
-		std::cout << "  -c[0..127] Center bias level(default:0)" << std::endl;
+		std::cout << "  -c[0..127] Center bias level(default:64)" << std::endl;
 		std::cout << "  -w[weight] Slope weight(default:weight=1.0)" << std::endl;
 		std::cout << "  -r[rate]   Output sampling rate(default:15) rate:" << std::endl;
 		for (int i=0; i<16; ++i) {
